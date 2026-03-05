@@ -162,6 +162,15 @@ def preparar_ordenes_aleatorios():
 # -------------------------------------------------
 if st.session_state.step != 3:
     header()
+else:
+    # quitar espacio superior en la pantalla final
+    st.markdown("""
+        <style>
+        .block-container {
+            padding-top: 1rem;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
 # ---------------- STEP 0: Intro ----------------
 if st.session_state.step == 0:
