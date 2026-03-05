@@ -241,9 +241,9 @@ elif st.session_state.step == 3:
     if gano:
         st.success("✅ ¡Caso resuelto! Reuniste suficientes pistas y elegiste el sospechoso final correcto.")
         st.balloons()
-        st.markdown(f"## 🚨 Descubriste a: **{NOMBRE_REVEAL}** 😎💛")
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
+            st.markdown(f"## 🚨 Descubriste a: **{NOMBRE_REVEAL}** 😎💛")
             st.image("foto_matias.JPG")
         st.info(
             "👉 Cuando me descubras, envía un mensaje por el grupo con una palabra que empiece por **M**. "
