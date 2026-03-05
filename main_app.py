@@ -160,7 +160,8 @@ def preparar_ordenes_aleatorios():
 # -------------------------------------------------
 # UI
 # -------------------------------------------------
-header()
+if st.session_state.step != 3:
+    header()
 
 # ---------------- STEP 0: Intro ----------------
 if st.session_state.step == 0:
