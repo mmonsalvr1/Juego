@@ -244,10 +244,10 @@ elif st.session_state.step == 3:
         st.markdown(f"## 🚨 Descubriste a: **{NOMBRE_REVEAL}** 😎💛")
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
-            st.image("foto_matias.JPG", width=300)
+            st.image("foto_matias.JPG")
         st.info(
             "👉 Cuando me descubras, envía un mensaje por el grupo con una palabra que empiece por **M**. "
-            "Y si eres la primera persona en enviarlo te ganas un premio 🏆"
+            "Si eres la primera persona en enviarlo te ganas un premio 🏆"
         )
     else:
         st.error("❌ Te equivocaste… vuelve a intentarlo 😈")
