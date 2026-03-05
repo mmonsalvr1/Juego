@@ -13,8 +13,24 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* Plan B: oculta contenedores fijos del badge en la esquina inferior derecha */
-    div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"] {display: none !important;}
+    /* Oculta menú/footer/header básicos */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Streamlit Cloud: toolbar/decoration */
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+
+    /* Streamlit Cloud: viewer badge (Created by / Hosted with Streamlit) - selectores nuevos */
+    [data-testid="stAppViewerBadge"] {display: none !important;}
+    [data-testid="stViewerBadge"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+
+    /* Viewer badge - selectores viejos (por si acaso) */
+    .viewerBadge_container__1QSob {display: none !important;}
+    .viewerBadge_link__1S137 {display: none !important;}
+    .viewerBadge_text__1JaDK {display: none !important;}
     </style>
     """,
     unsafe_allow_html=True
