@@ -10,15 +10,31 @@ st.set_page_config(
     layout="centered",
 )
 
-# 🔧 Ocultar elementos de Streamlit (menu, footer, github)
-st.markdown("""
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-a[href*="github.com"] {display: none !important;}
-</style>
-""", unsafe_allow_html=True)
+st.markdown(
+    """
+    <style>
+    /* Oculta menú/footer/header básicos */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+
+    /* Streamlit Cloud: toolbar/decoration */
+    [data-testid="stToolbar"] {display: none !important;}
+    [data-testid="stDecoration"] {display: none !important;}
+
+    /* Streamlit Cloud: viewer badge (Created by / Hosted with Streamlit) - selectores nuevos */
+    [data-testid="stAppViewerBadge"] {display: none !important;}
+    [data-testid="stViewerBadge"] {display: none !important;}
+    [data-testid="stStatusWidget"] {display: none !important;}
+
+    /* Viewer badge - selectores viejos (por si acaso) */
+    .viewerBadge_container__1QSob {display: none !important;}
+    .viewerBadge_link__1S137 {display: none !important;}
+    .viewerBadge_text__1JaDK {display: none !important;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 # -------------------------------------------------
 # Parámetros del juego
