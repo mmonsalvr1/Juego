@@ -14,7 +14,7 @@ st.set_page_config(
 # Parámetros del juego
 # -------------------------------------------------
 NOMBRE_REVEAL = "MATIAS"
-RESPUESTA_CORRECTA = "Matias Monsalve"  # Debe coincidir EXACTO con la opción en SUSPECTOS
+RESPUESTA_CORRECTA = "Matias Monsalve"  # Debe coincidir EXACTO con SUSPECTOS
 MIN_ACIERTOS = 3
 
 SUSPECTOS = [
@@ -79,11 +79,13 @@ if "step" not in st.session_state:
     st.session_state.step = 0  # 0 intro, 1 pistas, 2 mini-reto, 3 resultado
 
 if "answers" not in st.session_state:
-    st.session_state.answers = {}  # guarda pista_0..pista_4 y final_pick
+    st.session_state.answers = {}  # pista_0..pista_4 y final_pick
 
-# Guardamos un orden barajado por pista para que NO cambie con reruns
+# Opciones mezcladas por pista + en el final
 if "shuffled_options" not in st.session_state:
     st.session_state.shuffled_options = {}  # {idx: [opciones mezcladas]}
+if "shuffled_final" not in st.session_state:
+    st.session_state.shuffled_final = None  # lista mezclada para selectbox final
 
 # -------------------------------------------------
 # Helpers
@@ -96,6 +98,7 @@ def reset_game():
     st.session_state.step = 0
     st.session_state.answers = {}
     st.session_state.shuffled_options = {}
+    st.session_state.shuffled_final = None
     st.rerun()
 
 def header():
@@ -116,6 +119,18 @@ def contar_aciertos():
             aciertos += 1
     return aciertos
 
+def preparar_ordenes_aleatorios():
+    """Genera y guarda el orden aleatorio de opciones para cada pista y para el final."""
+    st.session_state.shuffled_options = {}
+    for i in range(len(PISTAS)):
+        opciones = SUSPECTOS.copy()
+        random.shuffle(opciones)
+        st.session_state.shuffled_options[i] = opciones
+
+    final_opts = SUSPECTOS.copy()
+    random.shuffle(final_opts)
+    st.session_state.shuffled_final = final_opts
+
 # -------------------------------------------------
 # UI
 # -------------------------------------------------
@@ -126,7 +141,7 @@ if st.session_state.step == 0:
     st.divider()
     st.markdown("### 🚨 Caso abierto")
     st.write(
-        "Tienes **5 pistas**. En cada una, elige el sospechoso que crees que es tu padrino. "
+        "Tienes **5 pistas**. En cada una, elige el sospechoso que crees que es el padrino secreto. "
         "Al final, harás un mini-reto con tu **sospechoso final**."
     )
     st.info(
@@ -138,7 +153,7 @@ if st.session_state.step == 0:
     with col1:
         if st.button("🎮 Empezar", use_container_width=True):
             st.session_state.answers = {}
-            st.session_state.shuffled_options = {}
+            preparar_ordenes_aleatorios()
             go(1)
     with col2:
         st.write("📌 Tip: responde rápido, no lo pienses tanto 😄")
@@ -147,11 +162,15 @@ if st.session_state.step == 0:
 elif st.session_state.step == 1:
     st.divider()
 
+    # por seguridad, si alguien entra aquí sin haber presionado Empezar
+    if not st.session_state.shuffled_options:
+        preparar_ordenes_aleatorios()
+
     idx = len([k for k in st.session_state.answers.keys() if k.startswith("pista_")])
     total = len(PISTAS)
 
     st.progress(min(idx, total) / total)
-    st.caption(f"Pista {min(idx+1, total)}/{total}")
+    st.caption(f"Pista {min(idx + 1, total)}/{total}")
 
     if idx >= total:
         go(2)
@@ -160,13 +179,7 @@ elif st.session_state.step == 1:
     st.markdown(f"### {pista['title']}")
     st.write(pista["text"])
 
-    # ✅ Opciones mezcladas por pista (se guardan para que no cambien en reruns)
-    if idx not in st.session_state.shuffled_options:
-        opciones = SUSPECTOS.copy()
-        random.shuffle(opciones)
-        st.session_state.shuffled_options[idx] = opciones
-    else:
-        opciones = st.session_state.shuffled_options[idx]
+    opciones = st.session_state.shuffled_options[idx]
 
     choice = st.radio(
         pista["question"],
@@ -189,13 +202,18 @@ elif st.session_state.step == 1:
 # ---------------- STEP 2: Mini-reto final ----------------
 elif st.session_state.step == 2:
     st.divider()
+
+    if st.session_state.shuffled_final is None:
+        # por seguridad
+        preparar_ordenes_aleatorios()
+
     st.markdown("### 🧩 Mini-reto final")
     st.write("Ya tienes las 5 pistas. Ahora elige tu **sospechoso final** para resolver el caso.")
 
     aciertos = contar_aciertos()
     st.metric("Aciertos (por ahora)", f"{aciertos}/5")
 
-    final_pick = st.selectbox("Tu sospechoso final es:", SUSPECTOS, index=0)
+    final_pick = st.selectbox("Tu sospechoso final es:", st.session_state.shuffled_final, index=0)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -224,7 +242,7 @@ elif st.session_state.step == 3:
         st.success("✅ ¡Caso resuelto! Reuniste suficientes pistas y elegiste el sospechoso final correcto.")
         st.balloons()
         st.markdown(f"## 🚨 Descubriste a: **{NOMBRE_REVEAL}** 😎💛")
-        st.image("foto_matias.jpg", caption="Tu padrino 😎", width=300)
+        st.image("foto_matias.JPG", caption="Tu padrino 😎", width=300)
         st.info(
             "👉 Cuando me descubras, envía un mensaje por el grupo con una palabra que empiece por **M**. "
             "Y si eres la primera persona en enviarlo te ganas un premio 🏆"
