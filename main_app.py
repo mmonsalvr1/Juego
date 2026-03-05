@@ -9,6 +9,12 @@ st.set_page_config(
     page_icon="🕵️‍♂️",
     layout="centered",
 )
+st.markdown("""
+<style>
+footer {visibility: hidden;}
+a[href*="github"] {display: none !important;}
+</style>
+""", unsafe_allow_html=True)
 
 # -------------------------------------------------
 # Parámetros del juego
