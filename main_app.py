@@ -1,4 +1,5 @@
 import streamlit as st
+import random
 
 # -------------------------------------------------
 # Configuración de la app
@@ -10,18 +11,17 @@ st.set_page_config(
 )
 
 # -------------------------------------------------
-# Parámetros del juego (edita si quieres)
+# Parámetros del juego
 # -------------------------------------------------
-NOMBRE_REVEAL = "MATÍAS"
-RESPUESTA_CORRECTA = "Matías"   # Debe coincidir EXACTO con la opción en SUSPECTOS
+NOMBRE_REVEAL = "MATIAS"
+RESPUESTA_CORRECTA = "Matias Monsalve"  # Debe coincidir EXACTO con la opción en SUSPECTOS
 MIN_ACIERTOS = 3
-CLAVES_VALIDAS = {"GALLO", "PADRINO", "M"}  # puedes cambiar/añadir
 
 SUSPECTOS = [
-    "Padrino A",
-    "Padrino B",
-    "Padrino C",
-    "Matías",
+    "Samuel Restrepo",
+    "Sara Valencia",
+    "Alejandro Galeano",
+    "Matias Monsalve",
 ]
 
 PISTAS = [
@@ -38,7 +38,7 @@ PISTAS = [
         "title": "Pista #2 🥏 Deporte",
         "text": (
             "Mientras muchos juegan fútbol o baloncesto… "
-            "este padrino corre detrás de un frisbee. Sí: juega ultimate."
+            "este padrino corre detrás de un frisbee."
         ),
         "question": "¿Quién sería el padrino que juega ultimate?",
         "correct": RESPUESTA_CORRECTA,
@@ -46,17 +46,17 @@ PISTAS = [
     {
         "title": "Pista #3 😌 Plan ideal",
         "text": (
-            "Si hay dos opciones: fiesta gigante o un parche tranquilo… "
+            "Si hay dos opciones: fiesta gigante o un parche tranqui… "
             "este padrino prefiere el parche tranqui."
         ),
-        "question": "¿Qué sospechoso crees que elige un plan tranqui?",
+        "question": "¿Qué sospechoso crees que elige este plan?",
         "correct": RESPUESTA_CORRECTA,
     },
     {
         "title": "Pista #4 🍦 Debilidad",
         "text": (
             "Hay algo que puede mejorar cualquier día de este padrino: "
-            "una buena bola (o dos) de helado."
+            "una bola (o mejor dos) de helado."
         ),
         "question": "¿Quién pediría helado sin pensarlo dos veces?",
         "correct": RESPUESTA_CORRECTA,
@@ -65,9 +65,9 @@ PISTAS = [
         "title": "Pista #5 🍫 La final",
         "text": (
             "Última pista: la fruta favorita de este padrino es… "
-            "**el chocolate** 🍫 (no pregunten, solo gócenlo)."
+            "**el chocolate** 🍫 (no pregunten, solo disfruten)."
         ),
-        "question": "Con esta pista final… ¿quién crees que es?",
+        "question": "¿Quién considera el chocolate como una fruta?",
         "correct": RESPUESTA_CORRECTA,
     },
 ]
@@ -81,6 +81,10 @@ if "step" not in st.session_state:
 if "answers" not in st.session_state:
     st.session_state.answers = {}  # guarda pista_0..pista_4 y final_pick
 
+# Guardamos un orden barajado por pista para que NO cambie con reruns
+if "shuffled_options" not in st.session_state:
+    st.session_state.shuffled_options = {}  # {idx: [opciones mezcladas]}
+
 # -------------------------------------------------
 # Helpers
 # -------------------------------------------------
@@ -91,6 +95,7 @@ def go(next_step: int):
 def reset_game():
     st.session_state.step = 0
     st.session_state.answers = {}
+    st.session_state.shuffled_options = {}
     st.rerun()
 
 def header():
@@ -122,14 +127,18 @@ if st.session_state.step == 0:
     st.markdown("### 🚨 Caso abierto")
     st.write(
         "Tienes **5 pistas**. En cada una, elige el sospechoso que crees que es tu padrino. "
-        "Al final, harás un mini-reto para abrir el sobre final."
+        "Al final, harás un mini-reto con tu **sospechoso final**."
     )
-    st.info(f"Para resolver el caso debes acertar **mínimo {MIN_ACIERTOS}/5** eligiendo a **{RESPUESTA_CORRECTA}**.")
+    st.info(
+        f"Para resolver el caso debes acertar **mínimo {MIN_ACIERTOS}/5** pistas "
+        "y también escoger bien el **sospechoso final**. Si no… tendrás que volver a intentarlo 😈"
+    )
 
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🎮 Empezar", use_container_width=True):
             st.session_state.answers = {}
+            st.session_state.shuffled_options = {}
             go(1)
     with col2:
         st.write("📌 Tip: responde rápido, no lo pienses tanto 😄")
@@ -151,9 +160,17 @@ elif st.session_state.step == 1:
     st.markdown(f"### {pista['title']}")
     st.write(pista["text"])
 
+    # ✅ Opciones mezcladas por pista (se guardan para que no cambien en reruns)
+    if idx not in st.session_state.shuffled_options:
+        opciones = SUSPECTOS.copy()
+        random.shuffle(opciones)
+        st.session_state.shuffled_options[idx] = opciones
+    else:
+        opciones = st.session_state.shuffled_options[idx]
+
     choice = st.radio(
         pista["question"],
-        options=SUSPECTOS,
+        options=opciones,
         index=None,
         key=f"choice_{idx}",
     )
@@ -173,31 +190,24 @@ elif st.session_state.step == 1:
 elif st.session_state.step == 2:
     st.divider()
     st.markdown("### 🧩 Mini-reto final")
-    st.write("Ya tienes las 5 pistas. Ahora elige tu **sospechoso final** y abre el sobre con la clave.")
+    st.write("Ya tienes las 5 pistas. Ahora elige tu **sospechoso final** para resolver el caso.")
 
     aciertos = contar_aciertos()
     st.metric("Aciertos (por ahora)", f"{aciertos}/5")
 
     final_pick = st.selectbox("Tu sospechoso final es:", SUSPECTOS, index=0)
-    clave = st.text_input(
-        "Para abrir el sobre final, escribe la palabra clave:",
-        placeholder="Ej: GALLO / PADRINO / M",
-    )
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("📩 Abrir sobre", use_container_width=True):
-            if clave.strip().upper() not in CLAVES_VALIDAS:
-                st.warning("Esa no es la clave… intenta con: GALLO / PADRINO / M 😉")
-            else:
-                st.session_state.answers["final_pick"] = final_pick
-                go(3)
+        if st.button("📩 Ver resultado", use_container_width=True):
+            st.session_state.answers["final_pick"] = final_pick
+            go(3)
 
     with col2:
         if st.button("⬅️ Volver a pistas", use_container_width=True):
             go(1)
 
-# ---------------- STEP 3: Resultado (gated 3/5) ----------------
+# ---------------- STEP 3: Resultado (gated 3/5 + final correcto) ----------------
 elif st.session_state.step == 3:
     st.divider()
     st.markdown("### 🧾 Resultado del caso")
@@ -206,16 +216,22 @@ elif st.session_state.step == 3:
     final_pick = st.session_state.answers.get("final_pick", "—")
 
     st.write(f"Tu sospechoso final fue: **{final_pick}**")
-    st.write(f"Aciertos eligiendo a **{RESPUESTA_CORRECTA}**: **{aciertos}/5** (mínimo **{MIN_ACIERTOS}**)")
+    st.write(f"Aciertos: **{aciertos}/5** (mínimo **{MIN_ACIERTOS}**)")
 
-    if aciertos >= MIN_ACIERTOS:
-        st.success("✅ ¡Caso resuelto! Reuniste suficientes pistas.")
+    gano = (aciertos >= MIN_ACIERTOS) and (final_pick == RESPUESTA_CORRECTA)
+
+    if gano:
+        st.success("✅ ¡Caso resuelto! Reuniste suficientes pistas y elegiste el sospechoso final correcto.")
         st.balloons()
-        st.markdown(f"## 🚨 Tu padrino es: **{NOMBRE_REVEAL}** 😎💛")
-        st.info("👉 Ahora ve al grupo y reacciona con un emoji que empiece con **M**.")
+        st.markdown(f"## 🚨 Descubriste a: **{NOMBRE_REVEAL}** 😎💛")
+        st.image("foto_matias.jpg", caption="Tu padrino 😎", width=300)
+        st.info(
+            "👉 Cuando me descubras, envía un mensaje por el grupo con una palabra que empiece por **M**. "
+            "Y si eres la primera persona en enviarlo te ganas un premio 🏆"
+        )
     else:
         st.error("❌ Te equivocaste… vuelve a intentarlo 😈")
-        st.write("Tip: piensa en quién encaja con: gym 💪, ultimate 🥏, parche tranqui 😌, helado 🍦 y chocolate 🍫.")
+        st.write("Tip: necesitas mínimo 3/5 y además escoger bien el sospechoso final.")
 
     col1, col2 = st.columns(2)
     with col1:
