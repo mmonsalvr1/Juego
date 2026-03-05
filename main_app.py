@@ -213,7 +213,7 @@ elif st.session_state.step == 2:
     aciertos = contar_aciertos()
     st.metric("Aciertos (por ahora)", f"{aciertos}/5")
 
-    final_pick = st.selectbox("Tu sospechoso final es:", st.session_state.shuffled_final, index=0)
+    final_pick = st.selectbox("Tu sospechoso final es (elige al que consideres correcto):", st.session_state.shuffled_final, index=0)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -233,7 +233,7 @@ elif st.session_state.step == 3:
     aciertos = contar_aciertos()
     final_pick = st.session_state.answers.get("final_pick", "—")
 
-    st.write(f"Tu sospechoso final fue (elige al que consideres correcto): **{final_pick}**")
+    st.write(f"Tu sospechoso final fue: **{final_pick}**")
     st.write(f"Aciertos: **{aciertos}/5** (mínimo **{MIN_ACIERTOS}**)")
 
     gano = (aciertos >= MIN_ACIERTOS) and (final_pick == RESPUESTA_CORRECTA)
