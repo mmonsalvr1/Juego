@@ -9,10 +9,14 @@ st.set_page_config(
     page_icon="🕵️‍♂️",
     layout="centered",
 )
+
+# 🔧 Ocultar elementos de Streamlit (menu, footer, github)
 st.markdown("""
 <style>
+#MainMenu {visibility: hidden;}
 footer {visibility: hidden;}
-a[href*="github"] {display: none !important;}
+header {visibility: hidden;}
+a[href*="github.com"] {display: none !important;}
 </style>
 """, unsafe_allow_html=True)
 
